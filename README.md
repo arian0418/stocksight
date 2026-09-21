@@ -1,43 +1,50 @@
-# StockSight — Stock Price Forecast Lab
+# StockSight — Python Stock Forecast Lab
 
-StockSight is an educational stock forecasting and backtesting dashboard. It combines real historical market data, transparent feature engineering, chronological model training, out-of-sample evaluation, and a polished browser interface.
+StockSight is an educational stock forecasting and backtesting dashboard built around **Python**. It loads real historical stock data, engineers time-series features, trains an understandable regression model, evaluates it on later unseen observations, and presents the results in a Streamlit dashboard.
 
-## Features
+## Stack
 
-- Load recent daily OHLCV history from Alpha Vantage.
-- Engineer prior-price, return, moving-average, volatility, and relative-volume features.
-- Train multivariable linear regression on the older 80% of usable observations.
-- Evaluate on the newer 20% rather than randomly shuffling time-series data.
-- Report MAE, RMSE, direction accuracy, and 20-day annualized volatility.
-- Visualize actual vs. predicted prices in the unseen test period.
-- Inspect the latest features and last 10 backtest predictions.
-- Produce an experimental next-day forecast.
-- Keep the API key in browser Local Storage instead of source control.
+- Python
+- Streamlit
+- pandas / NumPy
+- scikit-learn
+- Plotly
+- Alpha Vantage REST API
 
-## Run
+The project intentionally does not require JavaScript, Node.js, Docker, or a database.
 
-Open `index.html` in a modern browser. Get an Alpha Vantage API key, open **API Settings**, save the key, enter a ticker such as `IBM`, and click **Analyze Stock**.
+## What it does
 
-No Node.js, Python environment, database, or build step is required.
+StockSight loads daily OHLCV data for a ticker, calculates 1-day and 5-day returns, 5-day and 20-day moving averages, 20-day volatility, and relative volume. It trains a Ridge regression model chronologically: the older 80% of usable observations is training data and the newer 20% is the backtest.
 
-## Model
+The dashboard shows the latest close, experimental next-day forecast, MAE, RMSE, direction accuracy, annualized recent volatility, an actual-vs-predicted chart, model inputs, and recent backtest predictions.
 
-The model is deliberately understandable. StockSight implements multivariable linear regression directly in JavaScript using a normal-equation system solved with Gaussian elimination and a small diagonal regularization term for numerical stability.
+## Windows setup
 
-Each training row uses information available before its target close: current close, 1-day return, 5-day return, 5-day moving average, 20-day moving average, recent volatility, and relative volume. The target is the following trading day's close.
+Open Command Prompt inside the project folder and run:
 
-The data remains chronological: older observations train the model and newer observations test it. This makes the evaluation closer to the forecasting scenario and avoids randomly mixing later observations into training.
+```
+python -m pip install -r requirements.txt
+```
 
-## Metrics
+Then start the app:
 
-**MAE** is average absolute dollar error. **RMSE** is root mean squared dollar error and penalizes larger misses more. **Direction accuracy** measures how often predicted and actual daily direction agree in the test period. **20D volatility** is an annualized estimate based on recent daily returns.
+```
+python -m streamlit run app.py
+```
+
+Streamlit will open StockSight in your browser. Paste your Alpha Vantage API key into the sidebar, enter a ticker such as `IBM`, `AAPL`, or `NVDA`, and click **Analyze stock**.
+
+You can optionally set an environment variable named `ALPHA_VANTAGE_API_KEY` instead of pasting the key into the app.
+
+## Model design
+
+The model uses Ridge regression from scikit-learn. Ridge is a linear regression model with regularization, which makes it a reasonable, explainable baseline for a junior-level machine-learning project.
+
+The model is evaluated on later observations rather than a randomly shuffled test set. This is important because randomly mixing earlier and later stock observations can create an unrealistic evaluation setup.
 
 ## Limitations
 
-Stock prices are noisy and are affected by information that historical OHLCV data cannot capture. Historical backtest performance does not guarantee future performance. StockSight is an educational software/ML project, not a trading system, and its output is not financial advice.
+Stock prices are noisy and are affected by information that historical OHLCV data does not contain. Backtest performance does not guarantee future performance. StockSight is an educational software and machine-learning project, not a trading system, and its output is not financial advice.
 
-Alpha Vantage data availability and request limits depend on the user's API plan.
-
-## Tech
-
-HTML • CSS • Vanilla JavaScript • Canvas API • Alpha Vantage REST API • Local Storage
+Alpha Vantage request limits and data availability depend on the user's API plan.
