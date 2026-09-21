@@ -48,14 +48,17 @@ def build_features(df):
     x["Volatility_20"] = x["Return_1D"].rolling(20).std()
     x["Volume_Ratio"] = x["Volume"] / x["Volume"].rolling(20).mean()
     x["Target"] = x["Close"].shift(-1)
-    return x.dropna()
+    # Keep the latest row even though its future target is unknown. It is needed
+    # for a genuine next-day forecast; only training/evaluation rows need Target.
+    return x.dropna(subset=["Close","Return_1D","Return_5D","MA_5","MA_20","Volatility_20","Volume_Ratio"])
 
 def train_and_test(feature_df):
     features = ["Close","Return_1D","Return_5D","MA_5","MA_20","Volatility_20","Volume_Ratio"]
-    cut = int(len(feature_df) * .80)
-    if cut < 20 or len(feature_df) - cut < 5:
+    model_df = feature_df.dropna(subset=["Target"]).copy()
+    cut = int(len(model_df) * .80)
+    if cut < 20 or len(model_df) - cut < 5:
         raise ValueError("Not enough usable history to train and test the model.")
-    train, test = feature_df.iloc[:cut], feature_df.iloc[cut:]
+    train, test = model_df.iloc[:cut], model_df.iloc[cut:]
     model = Ridge(alpha=1.0)
     model.fit(train[features], train["Target"])
     predictions = model.predict(test[features])
@@ -64,7 +67,10 @@ def train_and_test(feature_df):
     actual_direction = np.sign(test["Target"].values - test["Close"].values)
     predicted_direction = np.sign(predictions - test["Close"].values)
     direction_accuracy = (actual_direction == predicted_direction).mean() * 100
-    model.fit(feature_df[features], feature_df["Target"])
+    # Retrain on every row whose next-day close is already known, then apply
+    # the model to the newest feature row. This avoids labeling an already-known
+    # historical target as a "next-day" forecast.
+    model.fit(model_df[features], model_df["Target"])
     next_prediction = model.predict(feature_df[features].iloc[[-1]])[0]
     return model, test, predictions, mae, rmse, direction_accuracy, next_prediction
 
