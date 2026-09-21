@@ -1,9 +1,15 @@
-# OS/editor files
-.DS_Store
-Thumbs.db
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Secrets
+.env
+.streamlit/secrets.toml
+
+# Editors / OS
 .vscode/
 .idea/
-
-# Never commit secrets
-.env
-.env.*
+.DS_Store
+Thumbs.db
