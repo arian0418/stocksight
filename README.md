@@ -2,6 +2,12 @@
 
 StockSight is an educational stock forecasting and backtesting dashboard built around **Python**. It loads real historical stock data, engineers time-series features, trains an understandable regression model, evaluates it on later unseen observations, and presents the results in a Streamlit dashboard.
 
+## Why I Built This
+
+I was interested in stocks and wanted to understand how programming, data analysis, and machine learning could be used to study historical market data instead of only looking at a normal stock chart.
+
+I built StockSight to experiment with that idea myself. It gave me a way to explore market trends, volatility, model performance, and simple next-day forecasts while learning how a machine-learning model can be trained and evaluated on time-series data.
+
 ## Stack
 
 - Python
@@ -39,9 +45,9 @@ You can optionally set an environment variable named `ALPHA_VANTAGE_API_KEY` ins
 
 ## Model design
 
-The model uses Ridge regression from scikit-learn. Ridge is a linear regression model with regularization, which makes it a reasonable, explainable baseline for a junior-level machine-learning project.
+The model uses Ridge regression from scikit-learn. Ridge is a linear regression model with regularization, which makes it an understandable baseline for this project.
 
-The model is evaluated on later observations rather than a randomly shuffled test set. This is important because randomly mixing earlier and later stock observations can create an unrealistic evaluation setup.
+The model is evaluated on later observations rather than a randomly shuffled test set. This avoids mixing earlier and later stock observations in the evaluation.
 
 ## Limitations
 
