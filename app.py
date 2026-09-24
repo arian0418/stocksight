@@ -6,6 +6,8 @@ import requests
 import streamlit as st
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 
 st.set_page_config(page_title="StockSight", page_icon="📈", layout="wide")
 
@@ -59,10 +61,11 @@ def train_and_test(feature_df):
     if cut < 20 or len(model_df) - cut < 5:
         raise ValueError("Not enough usable history to train and test the model.")
     train, test = model_df.iloc[:cut], model_df.iloc[cut:]
-    model = Ridge(alpha=1.0)
+    model = make_pipeline(StandardScaler(), Ridge(alpha=1.0))
     model.fit(train[features], train["Target"])
     predictions = model.predict(test[features])
     mae = mean_absolute_error(test["Target"], predictions)
+    baseline_mae = mean_absolute_error(test["Target"], test["Close"])
     rmse = np.sqrt(mean_squared_error(test["Target"], predictions))
     actual_direction = np.sign(test["Target"].values - test["Close"].values)
     predicted_direction = np.sign(predictions - test["Close"].values)
@@ -72,7 +75,7 @@ def train_and_test(feature_df):
     # historical target as a "next-day" forecast.
     model.fit(model_df[features], model_df["Target"])
     next_prediction = model.predict(feature_df[features].iloc[[-1]])[0]
-    return model, test, predictions, mae, rmse, direction_accuracy, next_prediction
+    return model, test, predictions, mae, baseline_mae, rmse, direction_accuracy, next_prediction
 
 st.sidebar.markdown("## 📈 STOCKSIGHT")
 st.sidebar.caption("FORECAST LAB")
@@ -108,7 +111,7 @@ if analyze:
         with st.spinner("Loading market data and training the model..."):
             prices = load_market_data(symbol, api_key)
             feature_df = build_features(prices)
-            model, test, predictions, mae, rmse, direction_accuracy, next_prediction = train_and_test(feature_df)
+            model, test, predictions, mae, baseline_mae, rmse, direction_accuracy, next_prediction = train_and_test(feature_df)
         latest = prices.iloc[-1]
         previous = prices.iloc[-2]
         daily_change = (latest["Close"] / previous["Close"] - 1) * 100
@@ -121,6 +124,8 @@ if analyze:
         c2.metric("Next-day forecast", f"${next_prediction:,.2f}", f"{forecast_change:+.2f}% model move")
         c3.metric("MAE", f"${mae:,.2f}")
         c4.metric("RMSE", f"${rmse:,.2f}")
+        st.caption(f"Naive baseline MAE (predict the next close equals today's close): ${baseline_mae:,.2f}. "
+                   + ("The model beat this baseline on the test period." if mae < baseline_mae else "The model did not beat this baseline on the test period."))
         c5,c6 = st.columns(2)
         c5.metric("Direction accuracy", f"{direction_accuracy:.1f}%")
         c6.metric("20-day annualized volatility", f"{volatility:.1f}%")
@@ -129,6 +134,7 @@ if analyze:
         chart = go.Figure()
         chart.add_trace(go.Scatter(x=test.index, y=test["Target"], name="Actual next close", mode="lines"))
         chart.add_trace(go.Scatter(x=test.index, y=predictions, name="Model prediction", mode="lines"))
+        chart.add_trace(go.Scatter(x=test.index, y=test["Close"], name="Naive baseline", mode="lines", line=dict(dash="dot")))
         chart.update_layout(template="plotly_dark", height=430, margin=dict(l=10,r=10,t=20,b=10), paper_bgcolor="#0d141c", plot_bgcolor="#0d141c", xaxis_title="", yaxis_title="Price ($)")
         st.plotly_chart(chart, use_container_width=True)
 
@@ -147,7 +153,7 @@ if analyze:
         st.dataframe(recent.style.format({"Actual":"${:.2f}","Predicted":"${:.2f}","Previous close":"${:.2f}","Error":"${:+.2f}"}), use_container_width=True)
 
         with st.expander("How the model works"):
-            st.write("StockSight creates features from historical OHLCV data, including recent returns, 5- and 20-day moving averages, 20-day volatility, and relative volume. It keeps the observations in time order, trains a Ridge regression model on the older 80%, and evaluates it on the newer 20%. MAE, RMSE, direction accuracy, and the prediction chart are calculated from that unseen test period.")
+            st.write("StockSight creates features from historical OHLCV data, including recent returns, 5- and 20-day moving averages, 20-day volatility, and relative volume. It keeps the observations in time order, scales each feature using only the training observations, trains a Ridge regression model on the older 80%, and evaluates it on the newer 20%. The naive baseline predicts that the next close equals the current close. MAE, baseline MAE, RMSE, direction accuracy, and the prediction chart are calculated from the same unseen test period.")
             st.info("A historical backtest is not proof that a stock can be predicted reliably. News, earnings, macroeconomic events, and many other factors are not represented by this simple model.")
     except (requests.RequestException, ValueError) as exc:
         st.error(str(exc))
