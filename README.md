@@ -39,7 +39,7 @@ Then start the app:
 python -m streamlit run app.py
 ```
 
-Streamlit will open StockSight in your browser. Paste your Alpha Vantage API key into the sidebar, enter a ticker such as `IBM`, `AAPL`, or `NVDA`, and click **Analyze stock**.
+Streamlit will open StockSight in your browser. The app starts in **Demo (synthetic)** mode: click **Analyze stock** to explore a deterministic example without an API key. For real data, choose **Alpha Vantage (live)**, paste your API key into the sidebar, enter a ticker such as `IBM`, `AAPL`, or `NVDA`, and click **Analyze stock**. Demo data is synthetic and must not be treated as a real backtest.
 
 You can optionally set an environment variable named `ALPHA_VANTAGE_API_KEY` instead of pasting the key into the app.
 
@@ -54,3 +54,7 @@ The model is evaluated on later observations rather than a randomly shuffled tes
 Stock prices are noisy and are affected by information that historical OHLCV data does not contain. Backtest performance does not guarantee future performance. StockSight is an educational software and machine-learning project, not a trading system, and its output is not financial advice.
 
 Alpha Vantage request limits and data availability depend on the user's API plan.
+
+## Tests
+
+Run `python -m unittest discover -v`. GitHub Actions runs the same test on each pull request.
