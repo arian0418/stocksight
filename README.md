@@ -25,6 +25,15 @@ StockSight loads daily OHLCV data for a ticker, calculates 1-day and 5-day retur
 
 The dashboard shows the latest close, experimental next-day forecast, MAE, a naive no-change baseline MAE, RMSE, direction accuracy, annualized recent volatility, an actual-vs-predicted chart, model inputs, and recent backtest predictions.
 
+## Two-minute demo
+
+1. Install dependencies and run the app using the commands below.
+2. Keep **Demo (synthetic)** selected and click **Analyze stock**. No API key is needed.
+3. Compare the model MAE against the naive baseline MAE, then inspect the two prediction lines and the recent errors. A model that does not beat the baseline is reported plainly.
+4. To try real historical prices, select **Alpha Vantage (live)** and provide your own API key. Availability depends on that service's limits.
+
+Demo prices are generated locally for exploration. They are not market observations or evidence that a trading strategy works.
+
 ## Windows setup
 
 Open Command Prompt inside the project folder and run:
@@ -57,4 +66,4 @@ Alpha Vantage request limits and data availability depend on the user's API plan
 
 ## Tests
 
-Run `python -m unittest discover -v`. GitHub Actions runs the same test on each pull request.
+Run `python -m unittest discover -v`. The tests cover feature generation and the demo button's rendered dashboard. GitHub Actions runs them on each pull request.
