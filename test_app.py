@@ -16,6 +16,7 @@ class ForecastTests(unittest.TestCase):
         from streamlit.testing.v1 import AppTest
         dashboard = AppTest.from_file("app.py", default_timeout=20).run()
         self.assertEqual(len(dashboard.error), 0)
+        self.assertEqual(len(dashboard.text_input), 1)  # API key only in demo mode
         dashboard.button[0].click().run()
         self.assertEqual(len(dashboard.error), 0)
         self.assertGreaterEqual(len(dashboard.metric), 8)
