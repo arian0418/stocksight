@@ -38,7 +38,11 @@ st.markdown('<p class="small-note">Explore a stock forecasting pipeline that sho
 
 left, right = st.columns([3,1])
 with left:
-    symbol = st.text_input("Stock symbol", "IBM", max_chars=10).strip().upper()
+    if data_source == "Alpha Vantage (live)":
+        symbol = st.text_input("Stock symbol", "IBM", max_chars=10).strip().upper()
+    else:
+        symbol = "DEMO"
+        st.caption("Synthetic example: no ticker or API key required.")
 with right:
     st.write("")
     st.write("")
