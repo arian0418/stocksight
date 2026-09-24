@@ -1,0 +1,39 @@
+/* Keep visual styling separate from the dashboard's Python flow. */
+.stApp { background: #f7f9fb; }
+.block-container { max-width: 1380px; padding-top: 2.5rem; padding-bottom: 2rem; }
+h1, h2, h3, h4 { color: #152f40; letter-spacing: -0.035em; }
+h1 { font-size: 2.45rem !important; font-weight: 700 !important; padding-bottom: 0.25rem !important; }
+.intro { color: #627383; font-size: 1rem; margin-bottom: 0.7rem; }
+.workspace-heading, .page-footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.66rem; letter-spacing: 0.13em; font-weight: 700; color: #657988; }
+.workspace-heading { padding-bottom: 0.45rem; }
+.workspace-heading span:first-child { color: #087f78; }
+.dataset-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 0.1rem 0 0.25rem; }
+.dataset-heading h2 { font-size: 1.3rem; margin: 0; padding: 0; }
+.dataset-heading span { color: #677b89; font-size: 0.8rem; }
+[data-testid="stMetric"] { background: #fff; border: 1px solid #e2e9ee; border-radius: 12px; padding: 17px 19px; box-shadow: 0 2px 3px #132b3e03; min-height: 128px; }
+[data-testid="stMetricLabel"] p { color: #607483; font-size: 0.8rem; font-weight: 600; }
+[data-testid="stMetricValue"] { color: #173647; font-size: 1.8rem; font-weight: 650; }
+[data-testid="stMetricDelta"] { font-size: 0.75rem; }
+[data-testid="stVerticalBlockBorderWrapper"] > div { border-radius: 12px; }
+[data-testid="stTabs"] [data-baseweb="tab-list"] { gap: 1.6rem; }
+[data-testid="stTabs"] [data-baseweb="tab"] { font-weight: 600; padding: 0.25rem 0.2rem; }
+[data-testid="stPlotlyChart"] { border-radius: 10px; overflow: hidden; }
+[data-testid="stAlert"] { border-radius: 10px; }
+[data-testid="stAlert"] p { font-size: 0.85rem; }
+[data-testid="stSidebar"] { border-right: 1px solid #203c49; }
+[data-testid="stSidebar"] > div:first-child { padding-top: 1rem; }
+.brand { display: flex; align-items: center; gap: 12px; color: #f2f7f9; font-size: 1.5rem; font-weight: 700; letter-spacing: -0.04em; margin: 1rem 0 2.3rem; }
+.brand-mark { display: grid; place-items: center; width: 40px; height: 40px; background: #35b9a9; border-radius: 11px; color: #0f3441; font-size: 1.5rem; }
+.brand small { display: block; color: #95b4c0; font-size: 0.6rem; letter-spacing: 0.19em; font-weight: 500; margin-top: 2px; }
+.sidebar-label { color: #89acb9; font-size: 0.65rem; letter-spacing: 0.14em; font-weight: 700; margin-bottom: 0.6rem; }
+.sidebar-footnote { color: #a6bdc7; font-size: 0.67rem; line-height: 1.8; margin-top: 1.1rem; }
+.page-footer { padding-top: 1.7rem; margin-top: 0.6rem; border-top: 1px solid #e3eaf0; }
+button:focus-visible, a:focus-visible { outline: 3px solid #32aa9f !important; outline-offset: 3px !important; }
+@media (max-width: 760px) {
+  .block-container { padding: 1.5rem 1rem; }
+  h1 { font-size: 2rem !important; }
+  .dataset-heading { flex-direction: column; gap: 0.25rem; }
+  .workspace-heading span:last-child, .page-footer span:last-child { display: none; }
+  [data-testid="stMetric"] { min-height: 112px; }
+  [data-testid="stTabs"] [data-baseweb="tab-list"] { gap: 1rem; }
+}
