@@ -35,7 +35,7 @@ python -m pip install -r requirements.txt
 python -m streamlit run app.py
 ```
 
-Open `http://127.0.0.1:8501`. The checked-in configuration binds the development
+Open `http://127.0.0.1:8501`. The included configuration binds the development
 server to localhost. Hosting requires an explicit address override appropriate
 to that environment, for example `--server.address=0.0.0.0`.
 
@@ -49,7 +49,7 @@ Streamlit 1.64+ is required for the dashboard's sizing APIs.
    observations have fixed dates in 2025; they are not market data.
 2. In **Price history**, change the range and toggle moving averages. The
    chart filter does not change the data used for model fitting.
-3. Open **Backtest & errors**. Compare model MAE with the no-change baseline,
+3. Open **Backtest & errors**. Compare model MAE with the baseline that predicts no change,
    inspect the aligned prediction lines, and read individual errors.
 4. Choose the number of displayed ledger rows or download the full backtest
    CSV. Results remain available through these interactions.
@@ -64,7 +64,7 @@ browser session starts with the demo again.
 ## Bring your own CSV
 
 Choose **Upload CSV**. Download the example CSV for a complete, valid synthetic
-file, or supply your own comma-separated UTF-8 file with these columns:
+file, or supply your own CSV file encoded as UTF-8 with these columns:
 
 ```csv
 Date,Open,High,Low,Close,Volume
@@ -83,12 +83,12 @@ That snippet shows the format; analysis needs **at least 60 daily observations**
 | Volume | Finite and nonnegative; zero is valid |
 | Missing or invalid cells | Rejected with an actionable message; never silently dropped |
 | Extra columns | Ignored after validating column names |
-| Gaps | Preserved; observations are not inserted or forward-filled |
+| Gaps | Preserved; observations are not inserted or filled from earlier values |
 | Units | Source price units are used; the app does not assume USD |
 
 The CSV's author is responsible for currency, adjustment status, and provenance.
-Upload one daily instrument at a time. Intraday or multi-symbol files are not
-supported. An all-zero-volume window supplies a relative-volume feature of zero.
+Upload one daily instrument at a time. Intraday files and files containing multiple
+symbols are not supported. When a window contains no volume, its relative volume feature is zero.
 
 ## Optional provider data
 
@@ -100,7 +100,7 @@ before launching the app.
 The key is sent to Alpha Vantage and held in the current session; it is not
 written to project files. Request URLs, raw provider messages, and exception
 details are never displayed because they may contain credentials. Requests have
-a 20-second timeout. Data availability and rate limits depend on the provider
+a timeout of 20 seconds. Data availability and rate limits depend on the provider
 and the key's plan. Daily observations are not streaming quotes. The dashboard
 shows the last observation date, snapshot preparation time, and a warning for
 provider history more than a week old.
@@ -110,21 +110,21 @@ provider responses and require no real credentials.
 
 ## How the model works
 
-1. **Features:** current close, 1- and 5-observation returns, 5- and
-   20-observation moving averages, 20-observation return volatility, and
-   volume relative to its 20-observation average. The first 20 rows warm up the
+1. **Features:** current close, returns over 1 and 5 observations, moving averages
+   over 5 and 20 observations, return volatility over 20 observations, and
+   volume relative to its average over 20 observations. The first 20 rows warm up the
    indicators. Every feature uses only its current observation and earlier ones.
 2. **Target:** the next supplied observation's close. Both the input date and
    target date are retained. Charts and exports use the **target date**, avoiding
-   an easy-to-miss one-observation shift.
+   a subtle shift of one observation.
 3. **Evaluation:** the oldest 80% of labeled rows fit `StandardScaler` and
    `Ridge(alpha=1.0)`. That model remains fixed while predicting the newest 20%.
-   Neither scaling nor fitting sees the held-out target prices. This is a single
-   chronological holdout, not cross-validation or a rolling retraining study.
+   Neither scaling nor fitting sees the target prices in the test set. This is a single
+   chronological holdout, not repeated validation or a rolling retraining study.
 4. **Baseline:** predict that the next close equals the current close. MAE, RMSE,
-   and direction accuracy use the same held-out period. Ties count as a separate
+   and direction accuracy use the same test period. Ties count as a separate
    unchanged direction. A failure to beat the baseline is stated plainly.
-5. **Next-close estimate:** after evaluation, refit on all known targets and
+5. **Next close estimate:** after evaluation, refit on all known targets and
    predict from the newest feature row. Its target is still unknown. This refit
    never replaces the stored backtest predictions or metrics.
 
@@ -140,7 +140,7 @@ error in the ledger means the forecast was too high.
 | `app.py` | Input forms, session snapshots, charts, metrics, source labels, and CSV downloads |
 | `styles.css` | Responsive dashboard styling |
 | `.streamlit/config.toml` | Theme, local binding, upload limit, and telemetry setting |
-| `test_forecast.py` | Validation, chronology, target-date/export alignment, and safe provider errors |
+| `test_forecast.py` | Validation, chronology, alignment of target dates and exports, and safe provider errors |
 | `test_app.py` | Real Streamlit AppTest coverage for default demo, reruns, source changes, and error recovery |
 | `docs/development-plan.md` | Scope, design decisions, and verification plan |
 
@@ -156,9 +156,9 @@ python -m compileall -q app.py forecast.py test_app.py test_forecast.py
 
 GitHub Actions runs the unittest suite. The suite covers finite/OHLCV checks,
 short histories, duplicate dates and raw CSV headers, zero volume, safe error
-messages, target-date alignment, full-period exports, and session persistence.
+messages, target date alignment, complete backtest exports, and session persistence.
 The chronology regression changes only later observations and verifies that
-earlier held-out predictions do not change.
+earlier test predictions do not change.
 
 Streamlit AppTest may print its harmless `missing ScriptRunContext` warning
 when started outside a running Streamlit server.
@@ -182,5 +182,5 @@ when started outside a running Streamlit server.
 
 I wanted to understand how programming and machine learning could help study
 historical stock data beyond looking at a price chart. This project makes the
-pipeline visible—from inputs to predictions to errors—while keeping the code
+pipeline visible from inputs to predictions to errors while keeping the code
 small enough to learn from.
